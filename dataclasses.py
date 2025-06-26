@@ -648,8 +648,8 @@ def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
         if line:
             body_lines.append(line)
             # TODO: make this cleaner
-            # print(f)
-            body_lines.append(f"""
+            if hasattr(f.type, "__name__"):
+                body_lines.append(f"""
   if not isinstance({f.name}, {f.type.__name__}):
     raise TypeError(f'Expected {f.type.__name__} for parameter {f.name}, got {{type({f.name}).__name__}}')
 """)
