@@ -408,10 +408,6 @@ def _fields_in_init_order(fields):
     # Returns the fields as __init__ will output them.  It returns 2 tuples:
     # the first for normal args, and the second for keyword args.
 
-    # print("BKPT")
-    # [Field(name='test',type=<class 'str'>,default=<dataclasses._MISSING_TYPE object at 0x7d01def9c860>,default_factory=<dataclasses._MISSING_TYPE object at 0x7d01def9c860>,init=True,repr=True,hash=None,compare=True,metadata=mappingproxy({}),kw_only=False,_field_type=_FIELD)]
-    # print(fields)
-
     return (tuple(f for f in fields if f.init and not f.kw_only),
             tuple(f for f in fields if f.init and f.kw_only)
             )
@@ -614,9 +610,6 @@ def _init_param(f):
 def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
              self_name, func_builder, slots):
     # fields contains both real fields and InitVar pseudo-fields.
-    # print("BKPT")
-    # print("init")
-    # print("FIELDS", fields)
 
     # Make sure we don't have fields without defaults following fields
     # with defaults.  This actually would be caught when exec-ing the
@@ -653,6 +646,13 @@ def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
   if not isinstance({f.name}, {f.type.__name__}):
     raise TypeError(f'Expected {f.type.__name__} for parameter {f.name}, got {{type({f.name}).__name__}}')
 """)
+#             else:
+#                 print(f.type)
+#                 body_lines.append(f"""
+#   if not isinstance({f.name}, {f.type}):
+#     raise TypeError()
+# """)
+
             # body_lines.append(f"  assert isinstance({f.name}, {f.type.__name__}), raise TypeError")
             # print("LINE", line)
 
@@ -674,7 +674,6 @@ def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
         _init_params += ['*']
         _init_params += [_init_param(f) for f in kw_only_fields]
 
-    # print("BODY LINES", body_lines)
     func_builder.add_fn('__init__',
                         [self_name] + _init_params,
                         body_lines,
