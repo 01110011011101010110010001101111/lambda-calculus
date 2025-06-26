@@ -64,6 +64,8 @@ class NumericValue(Expr):
 
 # page 72
 def evaluate(expr: Expr) -> Expr:
+    assert isinstance(expr, Expr)
+
     match expr:
         case Variable(name):
             return expr
@@ -95,46 +97,38 @@ def evaluate(expr: Expr) -> Expr:
                 # NOTE: not 1-to-1 with the book, doing unnecessary evals of the t_branch and f_branch
                 # return Conditional(eval_cond, evaluate(t_branch), evaluate(f_branch))
                 return Conditional(eval_cond, t_branch, f_branch)
-        # TODO: MUST BE EXPRESSION!!!
+        # page 41
         case Predecessor(num):
-            # match num:
-            #     # pred 0 -> 0
-            #     case ConstZero():
-            #         return ConstZero()
-            #     # pred ( succ (nv_1) ) -> nv1
-            #     case Successor(nv1) if isinstance(nv1, NumericValue):
-            #         return nv1
-            # t1 -> t1' ==> pred t1 -> pred t1'
-            eval_num = evaluate(num)
-            match eval_num:
-                case NumericValue(_num):
-                    if _num == 1:
-                        return ConstZero()
-                    else:
-                        return NumericValue(_num - 1)
+            match num:
+                # pred 0 -> 0
                 case ConstZero():
                     return ConstZero()
-                case _:
-                    raise NotImplementedError
+                # pred ( succ (nv_1) ) -> nv1
+                case Successor(nv1) if isinstance(nv1, NumericValue) or isinstance(nv1, ConstZero):
+                    return nv1
+            # t1 -> t1' ==> pred t1 -> pred t1'
+            eval_num = evaluate(num)
+            return (Predecessor(eval_num))
+        # page 41
         case Successor(num):
             eval_num = evaluate(num)
-            match eval_num:
-                case NumericValue(_num):
-                    if _num == -1:
-                        return ConstZero()
-                    else:
-                        return NumericValue(_num + 1)
-                case ConstZero():
-                    return NumericValue(1)
-                case _:
-                    raise NotImplementedError
+            return Successor(eval_num)
         case ZeroTest(num):
-            return ConstTrue() if isinstance(evaluate(num), ConstZero) else ConstFalse()
+            match num:
+                case ConstZero():
+                    return ConstTrue()
+                case Successor(nv1):
+                    return ConstFalse()
+                case _:
+                    nump = evaluate(num)
+                    return evaluate(ZeroTest(nump))
         case _:
             raise NotImplementedError
 
 # free variables
 def fv(expr: Expr) -> set[str]:
+    assert isinstance(expr, Expr)
+
     match expr:
         # main terms
         case Variable(name):
@@ -157,6 +151,10 @@ def fv(expr: Expr) -> set[str]:
 
 # page 71, section 5.3.5
 def substitute(x: str, s: Expr, expr: Expr) -> Expr:
+    assert type(x) == str
+    assert isinstance(s, Expr)
+    assert isinstance(expr, Expr)
+
     match expr:
         case Variable(name) if x == name:
             return s
