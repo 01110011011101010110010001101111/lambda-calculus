@@ -8,6 +8,17 @@ def test_boolean():
     # iszero (pred (succ 0));
     assert isinstance(evaluate(ZeroTest(Predecessor(Successor(ConstZero())))), ConstTrue)
 
+    assert isinstance(evaluate(Conditional(ConstTrue(), ConstTrue(), ConstFalse())), ConstTrue)
+
+    assert isinstance(evaluate(Conditional(ZeroTest(ConstZero()), ConstTrue(), ConstFalse())), ConstTrue)
+
+    assert isinstance(evaluate(Predecessor(ConstZero())), ConstZero)
+
+    result = Predecessor(Variable("x"))
+    assert isinstance(result, Predecessor)
+    assert isinstance(result.num, Variable)
+    assert result.num.name == "x"
+
 def test_major():
     result = evaluate(Evaluation(Lambda("x", Variable("x")), Lambda("y", Variable("y"))))
     assert isinstance(result, Lambda)
@@ -40,6 +51,15 @@ def test_major():
     assert isinstance(result.f, Variable)
     assert isinstance(result.a, Variable)
     assert result.f.name == "x"
+    assert result.a.name == "y"
+
+    result = evaluate(Evaluation(Lambda("x", Variable("x")), Variable("y")))
+    assert isinstance(result, Evaluation)
+    assert isinstance(result.f, Lambda)
+    assert isinstance(result.a, Variable)
+    assert isinstance(result.f.body, Variable)
+    assert result.f.arg == "x"
+    assert result.f.body.name == "x"
     assert result.a.name == "y"
 
 

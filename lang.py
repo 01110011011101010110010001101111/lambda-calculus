@@ -108,7 +108,7 @@ def evaluate(expr: Expr) -> Expr:
                     return nv1
             # t1 -> t1' ==> pred t1 -> pred t1'
             eval_num = evaluate(num)
-            return (Predecessor(eval_num))
+            return Predecessor(eval_num)
         # page 41
         case Successor(num):
             eval_num = evaluate(num)
@@ -121,7 +121,13 @@ def evaluate(expr: Expr) -> Expr:
                     return ConstFalse()
                 case _:
                     nump = evaluate(num)
-                    return evaluate(ZeroTest(nump))
+                    match nump:
+                        case ConstZero():
+                            return ConstTrue()
+                        case Successor(nv1):
+                            return ConstFalse()
+                        case _:
+                            return ZeroTest(nump)
         case _:
             raise NotImplementedError
 
