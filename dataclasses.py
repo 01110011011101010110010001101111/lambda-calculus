@@ -616,7 +616,7 @@ def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
     # fields contains both real fields and InitVar pseudo-fields.
     # print("BKPT")
     # print("init")
-    # print(fields, std_fields, kw_only_fields)
+    # print("FIELDS", fields)
 
     # Make sure we don't have fields without defaults following fields
     # with defaults.  This actually would be caught when exec-ing the
@@ -647,6 +647,14 @@ def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
         # initialization (it's a pseudo-field).  Just skip it.
         if line:
             body_lines.append(line)
+            # TODO: make this cleaner
+            # print(f)
+            body_lines.append(f"""
+  if not isinstance({f.name}, {f.type.__name__}):
+    raise TypeError(f'Expected {f.type.__name__} for parameter {f.name}, got {{type({f.name}).__name__}}')
+""")
+            # body_lines.append(f"  assert isinstance({f.name}, {f.type.__name__}), raise TypeError")
+            # print("LINE", line)
 
     # Does this class have a post-init function?
     if has_post_init:
@@ -665,6 +673,8 @@ def _init_fn(fields, std_fields, kw_only_fields, frozen, has_post_init,
         # (instead of just concatenting the lists together).
         _init_params += ['*']
         _init_params += [_init_param(f) for f in kw_only_fields]
+
+    # print("BODY LINES", body_lines)
     func_builder.add_fn('__init__',
                         [self_name] + _init_params,
                         body_lines,
